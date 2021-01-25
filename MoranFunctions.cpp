@@ -1,18 +1,25 @@
 #include <vector>
 #include <tuple>
 #include <boost/random/mersenne_twister.hpp>
+#include <memory>
 
 using namespace std;
 
 #include "MoranFunctions.h"
 
-
+simVolume::simVolume(){
+	this->cellFilled=0;
+}
 
 simVolume::simVolume(volParams setupParams){
 	this->cellFilled=setupParams.filled;
 }
 
-cancerCell::cancerCell(volParams setupParams):simVolume(setupParams){
+int simVolume::returnCellType(){
+	return 0;
+}
+
+cancerCell::cancerCell(volParams setupParams):simVolume{setupParams}{
 	this->hold=setupParams.cellType;
 }
 
@@ -69,4 +76,37 @@ int iPlus(int currentPlace, int maxSize){
 int iMinus(int currentPlace){
 	if (currentPlace==0) return currentPlace;
 	else return (currentPlace-1);
+}
+
+void growthRound(vector<vector<vector<unique_ptr<simVolume> > > >& inVolume, volParams& newCancerParams){
+	double growthProb(0.025);
+	const int simDim(inVolume.size());
+
+	for(int i=0;i<simDim;i++){
+		for(int j=0;j<simDim;j++){
+			for(int k=0;k<simDim;k++){
+				if(inVolume[i][j][k]->returnCellType()==4){
+					double growthPull(randPull());
+					if(inVolume[iPlus(i,simDim)][j][k]->returnCellType()==0&&growthPull<growthProb){
+						inVolume[iPlus(i,simDim)][j][k]=make_unique<cancerCell>(newCancerParams);
+					}
+					if(inVolume[iMinus(i)][j][k]->returnCellType()==0&&growthPull<growthProb){
+						inVolume[iMinus(i)][j][k]=make_unique<cancerCell>(newCancerParams);
+					}
+					if(inVolume[i][iPlus(j,simDim)][k]->returnCellType()==0&&growthPull<growthProb){
+						inVolume[i][iPlus(j,simDim)][k]=make_unique<cancerCell>(newCancerParams);
+					}
+					if(inVolume[i][iMinus(j)][k]->returnCellType()==0&&growthPull<growthProb){
+						inVolume[i][iMinus(j)][k]=make_unique<cancerCell>(newCancerParams);
+					}
+					if(inVolume[i][j][iPlus(k,simDim)]->returnCellType()==0&&growthPull<growthProb){
+						inVolume[i][j][iPlus(k,simDim)]=make_unique<cancerCell>(newCancerParams);
+					}
+					if(inVolume[i][j][iMinus(k)]->returnCellType()==0&&growthPull<growthProb){
+						inVolume[i][j][iMinus(k)]=make_unique<cancerCell>(newCancerParams);
+					}
+				}
+			}
+		}
+	}
 }

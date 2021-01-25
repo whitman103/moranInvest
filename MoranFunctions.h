@@ -4,19 +4,19 @@
 #include <vector>
 #include <tuple>
 
+extern double randPull();
 
 struct volParams{
 	bool filled;
 	int cellType;
-
 };
 
 class simVolume{
 	public:
 	bool cellFilled;
+	simVolume();
 	simVolume(volParams setupParams);
 	virtual int returnCellType();
-
 	private:
 };
 
@@ -37,5 +37,7 @@ vector<tuple<int,int,int> > generateCubicNeighbors(tuple<int,int,int> currentPos
 int iPlus(int currentPlace, int maxSize);
 
 int iMinus(int currentPlace);
+
+void growthRound(vector<vector<vector<unique_ptr<simVolume> > > >& inVolume, volParams& newCancerParams);
 
 #endif
