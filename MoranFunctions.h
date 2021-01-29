@@ -4,27 +4,37 @@
 #include <vector>
 #include <tuple>
 
+extern boost::mt19937 generator;
+
 extern double randPull();
 
 struct volParams{
 	bool filled;
 	int cellType;
+	int boundReceptorThresh;
+	bool aliveCell;
 };
 
 class simVolume{
 	public:
 	bool cellFilled;
+	bool cellAlive;
+	int boundReceptors;
 	simVolume();
 	simVolume(volParams setupParams);
+	int bindIL(int cytoIn, double deltaT);
+	int cellType;
 	virtual int returnCellType();
+	virtual bool checkBoundReceptors();
 	private:
 };
 
 class cancerCell: public simVolume{
 	public:
 	cancerCell(volParams setupParams);
+	int apopThreshold;
 	int returnCellType();
-	int hold;
+	bool checkBoundReceptors();
 	private:
 };
 
@@ -39,5 +49,7 @@ int iPlus(int currentPlace, int maxSize);
 int iMinus(int currentPlace);
 
 void growthRound(vector<vector<vector<unique_ptr<simVolume> > > >& inVolume, volParams& newCancerParams);
+
+void bindingRound(vector<vector<vector<unique_ptr<simVolume> > > >& inVolume, vector<vector<vector<int> > >& cytoField, double deltaT);
 
 #endif

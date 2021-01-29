@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <string>
 #include <chrono>
 #include <fstream>
 #include <memory>
@@ -18,11 +19,14 @@ double randPull(){
 int main(){
 	generator.seed(time(NULL));
 
+	string baseFolder="dataBin//";
 
 	const int simDim(50);
 	volParams initParams;
 	initParams.filled=false;
 	initParams.cellType=4;
+	initParams.boundReceptorThresh=40;
+	initParams.aliveCell=true;
 
 	vector<vector<vector<unique_ptr<simVolume> > > > simSpace;
 
@@ -48,24 +52,33 @@ int main(){
 	}
 
 	double growthProb(0.025);
+	double deltaT(1);
 
-	for(int growthRounds=0;growthRounds<50;growthRounds++){
-		growthRound(simSpace,initParams);
-	}
+	ofstream testOut;
 
-	ofstream testOut("cancerCells.txt");
+	for(int round=0;round<250;round++){
+		proteinField[25][25][10]+=2500;
+		diffuseProteins(proteinField,generator);
+		if(round%5==0){
+			growthRound(simSpace,initParams);
+		}
+		bindingRound(simSpace,proteinField,deltaT);
 
-	for(int i=0;i<simDim;i++){
-		for(int j=0;j<simDim;j++){
-			for(int k=0;k<simDim;k++){
-				if(simSpace[i][j][k]->returnCellType()==4){
-					testOut<<i<<" "<<j<<" "<<k<<" "<<k<<endl;
+		testOut.open(baseFolder+"cancerCells_"+to_string(round)+".txt");
+
+		for(int i=0;i<simDim;i++){
+			for(int j=0;j<simDim;j++){
+				for(int k=0;k<simDim;k++){
+					if(simSpace[i][j][k]->returnCellType()!=0){
+						testOut<<i<<" "<<j<<" "<<k<<" "<<simSpace[i][j][k]->cellAlive<<endl;
+					}
 				}
 			}
 		}
+
+		testOut.close();
 	}
 
-	testOut.close();
 
 	proteinField[25][25][25]=2000;
 	for(int i=0;i<8;i++){
